@@ -9,11 +9,20 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")]
     public float movementSpeed = 10f;
     public float movementMultiplier = 10f;
+    [SerializeField] float airMultiplier = 0.4f;
+
+    [Header("Jumping")]
+    public float jumpForce = 5f;
+
+    [Header("Keybinds")]
+    [SerializeField] KeyCode jumpKey = KeyCode.Space;
+    
+    [Header("Drag")]
+    float groundDrag = 6f;
+    float airDrag = 2f;
 
     float horizontalMovement;
     float verticalMovement;
-
-    float rbDrag = 6f;
 
     bool isGrounded;
 
@@ -33,6 +42,11 @@ public class PlayerMovement : MonoBehaviour
 
         MyInput();
         ControlDrag();
+
+        if (Input.GetKeyDown(jumpKey) && isGrounded)
+        {
+            Jump();
+        }
     }
 
     void MyInput()
@@ -43,9 +57,21 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = transform.forward * verticalMovement + transform.right * horizontalMovement;
     }
 
+    void Jump()
+    {
+        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
+
     void ControlDrag()
     {
-        rb.drag = rbDrag;
+        if (isGrounded)
+        {
+            rb.drag = groundDrag;
+        }
+        else
+        {
+            rb.drag = airDrag;
+        }
     }
 
     private void FixedUpdate()
@@ -55,6 +81,13 @@ public class PlayerMovement : MonoBehaviour
 
     void MovePlayer()
     {
-        rb.AddForce(moveDirection.normalized * movementSpeed * movementMultiplier, ForceMode.Acceleration);
+        if (isGrounded)
+        {
+            rb.AddForce(moveDirection.normalized * movementSpeed * movementMultiplier, ForceMode.Acceleration);
+        }
+        else
+        {
+            rb.AddForce(moveDirection.normalized * movementSpeed * airMultiplier, ForceMode.Acceleration);
+        }
     }
 }
